@@ -12,13 +12,17 @@ Parameters:
   AppName:
     Type: String
     Description: Specify the ECS Application Name.
-    Default: awsecssample
+    Default: 'awsecssample'
   EcsClusterSecurityGroup:
     Type: String
     Description: Provide your ECS Container Instance Security Group ID (ex sg-c123456789)
   ECSImageName:
     Type: String
     Description: Select the image uploaded in AWS ECR.
+  ECSServiceTaskCount:
+    Type: String
+    Description: Specify the number of task replicas for your ECS Service.
+    Default: '2'
 
 Resources:
   EcsSecurityGroup:
@@ -119,7 +123,7 @@ Resources:
     DependsOn: ALBListener
     Properties:
       Cluster: !Ref 'ECSCluster'
-      DesiredCount: '3'
+      DesiredCount: !Ref 'ECSServiceTaskCount'
       LoadBalancers:
         - ContainerName: !Ref AppName
           ContainerPort: '80'
@@ -157,7 +161,7 @@ Resources:
     DependsOn: ECSService
     Properties:
       MaxCapacity: 4
-      MinCapacity: 3
+      MinCapacity: !Ref 'ECSServiceTaskCount'
       ResourceId: !Sub 'service/${ECSCluster}/${ECSService.Name}'
       RoleARN: !GetAtt 'AutoscalingRole.Arn'
       ScalableDimension: ecs:service:DesiredCount
